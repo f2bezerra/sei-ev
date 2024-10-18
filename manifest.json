@@ -1,0 +1,62 @@
+{
+	"manifest_version": 3,
+	"name": "sei-ev",
+	"version": "0.1.0",
+	"author": "Fabio Fernandes Bezerra",
+	"description": "Incorpora ao Sistema Eletrônico de Informações (SEI) novas funções de produtividade",
+	"icons": {
+		"48": "images/logo@48.png",
+		"64": "images/logo@64.png"
+	},
+	"content_scripts": [
+		{
+			"matches": [
+				"*://*.br/sei/controlador*"
+			],
+			"all_frames": true,
+			"css": [
+				"util/jslib/common/animation.css",
+				"util/jslib/common/common.css",
+				"util/sei/sei.css"
+			],
+			"js": [
+				"util/jquery/jquery-3.7.1.js",
+				"util/jslib/common/common.js",
+				"util/sei/sei.js",
+				"util/sei/PontoControle.js",
+				"scripts/menu.js"
+			]
+		},
+		{
+			"matches": [
+				"*://*.br/sei/controlador.php?acao=procedimento_controlar*"
+			],
+			"js": [
+				"scripts/procedimento-controlar.js"
+			]
+		},
+		{
+			"matches": [
+				"*://*.br/sei/controlador.php?acao=arvore_visualizar*"
+			],
+			"all_frames": true,
+			"js": [
+				"scripts/procedimento-trabalhar.js"
+			]
+		}
+	],
+	"permissions": [
+		"storage"
+	],
+	"web_accessible_resources": [
+		{
+			"matches": [
+				"*://*/*"
+			],
+			"resources": [
+				"images/*",
+				"config/*"
+			]
+		}
+	]
+}

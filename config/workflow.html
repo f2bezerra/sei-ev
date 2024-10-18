@@ -1,0 +1,235 @@
+﻿<html>
+
+<head>
+	<link href="../util/bootstrap/bootstrap-5.3.3.min.css" rel="stylesheet">
+	<script src="../util/bootstrap/bootstrap-5.3.3.bundle.min.js"></script>
+	<script src="../util/jquery/jquery-3.7.1.js"></script>
+	<script src="../util/jquery/jquery-ui-1.13.3.js"></script>
+	<script src="../util/jslib/common/common.js"></script>
+	<script src="../util/sei/PontoControle.js"></script>
+
+	<link href="workflow.css" rel="stylesheet">
+	<script src="workflow.js"></script>
+</head>
+</body>
+
+<!-- Lista de POntos de COntrole Configurados -->
+<div class="container">
+	<div class="row">
+		<h4>Fluxo de Trabalho</h4>
+	</div>
+	<div class="bar-buttons" style="margin: 10px 0;">
+		<button id="btnClear" type="button" class="btn btn-primary">Limpar</button>
+		<button id="btnAddToWorkflow" type="button" class="btn btn-primary">Adicionar</button>
+		<button id="btnApplyWorkflow" type="button" class="btn btn-primary">Aplicar</button>
+		<button id="btnExport" type="button" class="btn btn-primary">Exportar</button>
+		<input id="fileImport" type="file" style="display:none;" />
+		<button id="btnImport" type="button" class="btn btn-primary">Importar</button>
+	</div>
+
+	<ul id="wfContainer" class="card list-unstyled" style="padding: 8px;"></ul>
+
+</div>
+
+<!-- Editor de Ponto de Controle -->
+<div class="modal show" id="wfiEditor" data-bs-backdrop="static" tabindex="-1" aria-labelledby="wfiEditorLabel"
+	aria-modal="true" role="dialog">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-4" id="wfiEditorLabel">Editar</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="mb-3  form-floating">
+					<input id="txtPontoControle" class="form-control form-control-sm" aria-label="Ponto de Controle"
+						placeholder="Ponto de Controle" readonly disabled>
+					<select id="selPontoControle" class="form-select form-selecy-sm" aria-label="Ponto de Controle"
+						placeholder="Ponto de Controle"></select>
+					<label for="txtPontoControle" class="form-label">Ponto de Controle</label>
+				</div>
+				<div class="mb-3  form-floating">
+					<select id="selGrupo" class="form-select form-control-sm" aria-label="Default select example"
+						placeholder="Aqui">
+						<option value=""></option>
+						<option value=" new">Criar Novo...</option>
+					</select>
+					<label for="selGrupo" class="form-label">Grupo</label>
+				</div>
+				<div class="mb-3">
+					<label for="actContainer" class="form-label">Ações:&nbsp;&nbsp;&nbsp;<button id="btnAddAction"
+							type="button" class="btn btn-secondary btn-sm"><i class="plus-button">&nbsp;</i>
+							Adicionar</button></label>
+					<ul id="actContainer" class="card list-unstyled card-list">
+					</ul>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+				<button id="btnStoreWfi" type="button" class="btn btn-primary">Salvar</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Editor de Nome de Grupo -->
+	<div class="modal modal-over fade show" id="grpEditor" data-bs-backdrop="static" tabindex="-1" role="dialog">
+
+		<div class="modal-dialog modal-dialog-centered modal-sm">
+			<div class="modal-content">
+				<div class="modal-body">
+					<div class="mb-3">
+						<label for="txtNomeGrupo" class="form-label">Nome do Grupo</label>
+						<input id="txtNomeGrupo" class="form-control form-control-sm" aria-label="Nome do Grupo"
+							placeholder="Nome do Grupo">
+					</div>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					<button id="btnStoreGrupo" type="button" class="btn btn-primary" data-bs-dismiss="modal">Salvar
+						Grupo</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- Editor de Ação  -->
+	<div class="modal modal-over fade show" id="actEditor" data-bs-backdrop="static" tabindex="-1"
+		aria-labelledby="actEditorLabel" aria-modal="true" role="dialog">
+
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h1 class="modal-title fs-4" id="actEditorLabel">Editar Ação</h1>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row mb-3">
+						<label for="txtRotuloAcao" class="form-label col">Rótulo</label>
+						<div class="col-sm-10">
+							<input id="txtRotuloAcao" class="form-control form-control-sm" aria-label="Rótulo da Ação">
+						</div>
+					</div>
+					<div class="row mb-3">
+						<label for="selIconeAcao" class="form-label col">Ícone</label>
+						<div class="col-sm-10">
+							<div class="dropdown">
+								<button type="button" class="btn btn btn-outline-secondary" data-bs-toggle="dropdown"
+									aria-expanded="false">
+									<img id="selIconeAcao" class="icon-card card">
+								</button>
+								<div class="dropdown-menu">
+									<div id="iconContainer">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row mb-3">
+						<label for="selDestinoAcao" class="form-label col">Destino</label>
+						<div class="col-sm-10">
+							<select id="selDestinoAcao" class="form-select form-select-sm" aria-label="Destino">
+							</select>
+						</div>
+					</div>
+					<div class="mb-3">
+						<div class="dropdown">
+							<a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+								data-bs-toggle="dropdown" aria-expanded="false">
+								Operação
+							</a>
+
+							<ul id="operList" class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+							</ul>
+							<ul id="operContainer" class="card list-unstyled card-list">
+							</ul>
+						</div>
+					</div>
+
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+					<button id="btnStoreAction" type="button" class="btn btn-primary">Salvar</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Editor de Operação  -->
+		<div class="modal modal-over modal-lg fade show" id="operEditor" data-bs-backdrop="static" tabindex="-1"
+			aria-labelledby="operEditorLabel" aria-modal="true" role="dialog">
+
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h1 class="modal-title fs-4" id="operEditorLabel">Editar Operação</h1>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<div class="row mb-3">
+							<label for="txtNomeOper" class="form-label col">Nome da Operação</label>
+							<div class="col-sm-10">
+								<input id="txtNomeOper" class="form-control form-control-sm"
+									aria-label="Nome da Operação">
+							</div>
+						</div>
+						<div id="cmdOper" class="row mb-3">
+							<div class="col">
+								<label for="selCmdOper" class="form-label col">Comando</label>
+								<select id="selCmdOper" class="form-select form-control-sm"
+									aria-label="Comando da Operação">
+								</select>
+							</div>
+						</div>
+						<div class="row mb-3">
+							<label for="txtNomeOper" class="form-label col">Variáveis&nbsp;&nbsp;&nbsp;
+								<button id="btnAddRowVar" type="button" class="btn btn-secondary btn-sm">
+									<i class="plus-button">&nbsp;</i>
+									Adicionar</button></label>
+							<div class="col-sm-12">
+								<table id="cmdVars" class="table table-bordered table-hover">
+									<thead>
+										<tr>
+											<th scope="col" style="width: 15%;">Nome</th>
+											<th scope="col" style="width: 10%;">Tipo</th>
+											<th scope="col" style="width: 35%;">Rótulo</th>
+											<th scope="col" style="width: 40%;" colspan="2">Opções</th>
+										</tr>
+									</thead>
+									<tbody>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+						<button id="btnStoreOper" type="button" class="btn btn-primary">Salvar</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+</div>
+
+<div id="errorModal" class="modal" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Erro</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<p>Modal body text goes here.</p>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+</body>
+
+</html>
