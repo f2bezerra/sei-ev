@@ -42,6 +42,7 @@ var commands = {
         { desc: "Índice", type: "number" }
     ]
 };
+var macros = ['@login', '@anterior', '@atribuidos'];
 
 var currentOperTarget, currentActionTarget, currentWfiTarget;
 var operEditor, actionEditor, wfiEditor;
@@ -79,6 +80,17 @@ jQuery(async function ($) {
         $('#selCmdOper').append(`<option>${cmd}</option>`);
     }
 
+    let datalist = document.createElement("datalist");
+    datalist.id = 'macros-list';
+
+    for (let macro of macros) {
+        let option = document.createElement("option");
+        option.value = macro;
+        datalist.appendChild(option);
+    }
+    $('#cmdOper').append(datalist);
+
+
     let sprite = new Request(SPRITE);
     fetch(sprite).then(response => response.text()).then(response => {
         let parser = new DOMParser();
@@ -96,6 +108,7 @@ jQuery(async function ($) {
     });
 
     // Botões de ação superior
+    $('#btnBack').on('click', exitWorkflow);
     $('#btnClear').on('click', clearWorkflow);
     $('#btnAddToWorkflow').on('click', e => editWorkflowItem());
     $('#btnApplyWorkflow').on('click', applyWorkflow);
@@ -191,6 +204,11 @@ function clearWorkflow() {
 function applyWorkflow() {
     window.top.postMessage(JSON.stringify(config), '*');
 }
+
+function exitWorkflow() {
+    window.top.postMessage("back", '*');
+}
+
 
 function addWorkflowItem(key, item) {
     let $li = $(`
@@ -314,6 +332,10 @@ function storeWorkflowItem() {
     };
 
     if (!currentWfiTarget) wfiItem.value = $('#selPontoControle').val();
+    if (!wfiItem.value) {
+        let sei = pontosControleSei.find(ponto => ponto.name == wfiItem.name);
+        wfiItem.value = sei.value;
+    }
 
     let actions = $('#actContainer li').get().map(item => item.data);
     if (actions.length) wfiItem.actions = actions;
@@ -328,6 +350,7 @@ function storeWorkflowItem() {
     } else addWorkflowItem(key, wfiItem);
 
     wfiEditor.hide();
+    currentWfiTarget = null;
 }
 
 function clearActionList() {
@@ -414,6 +437,7 @@ function storeAction() {
     } else addActionItem(newAction);
 
     actionEditor.hide();
+    currentActionTarget = null;
 }
 
 function clearOperList() {
@@ -546,6 +570,7 @@ function storeOper() {
     }
 
     operEditor.hide();
+    currentOperTarget = null;
 }
 
 
@@ -618,7 +643,7 @@ function changeCmdOper(target) {
             $('#cmdOper').append(`
                 <div class="col">
                     <label class="form-label col">${arg.desc}</label>
-                    <input type="text" class="form-control cmd-args">
+                    <input type="text" list="macros-list" class="form-control cmd-args">
                 </div>
             `);
         }

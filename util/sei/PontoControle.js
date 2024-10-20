@@ -94,7 +94,9 @@ class PontoControle {
     }
 
     async executeAction(action, source, refresh) {
-        if (!action) throw new Error('Transição não definida');
+        if (!action) throw new Error('Ação não definida');
+
+        let macros = {};
 
         if (action.operations) {
             let fields = [];
@@ -104,7 +106,7 @@ class PontoControle {
                     for (const [varId, varInfo] of Object.entries(oper.vars)) {
                         let field = {
                             id: varId,
-                            label: varInfo.label ?? varId,
+                            label: await this.#parseMacros(varInfo.label ?? varId, macros),
                             type: varInfo.type ? (varInfo.type == "number" ? "text" : varInfo.type) : "text",
                             rows: varInfo.type === "textarea" ? (isNaN(varInfo.options) ? 4 : Number(varInfo.options)) : undefined,
                             validation: varInfo.type === "number" ? /^\s*\+?\d+\s*$/ : undefined
@@ -112,15 +114,8 @@ class PontoControle {
 
                         switch (varInfo.type) {
                             case 'select':
-                                field.items = varInfo.options ?? "";
-                                if (field.items == "@atribuidos") {
-                                    field.items = await this.#listAtribuidos();
-
-                                    if (field.items) {
-                                        field.items.shift();
-                                        if (field.items.length) field.value = field.items[0];
-                                    }
-                                }
+                                field.items = await this.#parseMacros(varInfo.options ?? "", macros);
+                                if (field.items && field.items.length) field.value = field.items[0];
                                 break;
                         }
 
@@ -130,7 +125,7 @@ class PontoControle {
             }
 
             if (fields.length) {
-                let title = action.label ?? 'sei-xp';
+                let title = action.label ?? 'sei-ev';
                 title = title.split(" ");
 
                 let confirmButton = action.label ? title[0] : 'Confirmar';
@@ -150,16 +145,12 @@ class PontoControle {
             };
 
             for (let oper of (action.operations ?? [])) {
-                let run = (oper.run ?? "").match(/(\w+)\(\s*(['"][^'"]*['"]|\-?\d+)?(?:\s*,\s*(['"][^'"]*['"]|\d+))?\s*\)/);
+                let run = await this.#parseMacros((oper.run ?? ""), macros);
+                run = run.match(/(\w+)\(\s*(['"][^'"]*['"]|\-?\d+)?(?:\s*,\s*(['"][^'"]*['"]|\d+))?\s*\)/);
 
                 switch (run[1]) {
                     case 'atribuir':
-                        let user = arg(run[2]);
-                        if (user === undefined) user = null;
-                        if (user === 0) user = undefined;
-                        if (user === -1) user = this.#listAtribuidos[1] ?? "inexistente";
-
-                        await this.#atribuir(user);
+                        await this.#atribuir(arg(run[2]));
                         break;
 
                     case 'marcar':
@@ -183,6 +174,43 @@ class PontoControle {
         await this.#set(action.to ? (action.to.value ?? action.to) : "null");
 
         if (refresh) window.top.document.location.reload();
+    }
+
+    async #parseMacros(text, macros = {}) {
+
+        if (!text) return text;
+
+        const regex = /\@(\w+)\b/g;
+        let m;
+
+        while ((m = regex.exec(text)) !== null) {
+            if (m.index === regex.lastIndex) regex.lastIndex++;
+
+            if (macros[m[1]] == undefined) {
+                switch (m[1]) {
+                    case 'login':
+                        let infoUser = getCurrentUser();
+                        macros.login = infoUser ? infoUser.login : '';
+                        break;
+
+                    case 'anterior':
+                        macros.atribuidos = macros.atribuidos || await this.#listAtribuidos();
+                        macros.anterior = macros.atribuidos ? macros.atribuidos[0] : '';
+                        break;
+
+                    case 'atribuidos':
+                        macros.atribuidos = macros.atribuidos || await this.#listAtribuidos();
+                        break;
+                }
+
+            }
+        }
+
+        if (m = text.match(/^\s*\@(\w+)\s*$/)) return macros[m[1]];
+
+        return text.replace(/\@(\w+)\b/g, (m0, macro) => {
+            return macros[macro] ?? `@${macro}`;
+        });
     }
 
     async #setMarker(marker, value) {
@@ -233,6 +261,8 @@ class PontoControle {
         if (atribuidos) {
             atribuidos = atribuidos.map(reg => (m = reg.descricao.match(/atribu[ií]do\s+para\s+(\w+)/i)) ? m[1] : '');
             atribuidos = [...new Set(atribuidos)];
+
+            atribuidos.shift();
         }
 
         return atribuidos ?? [];

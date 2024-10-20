@@ -31,8 +31,6 @@
 
 			anchorMenuItem.appendChild(seta);
 
-
-
 			let submenu = document.createElement('ul');
 			submenu.id = "submenu_pontos_controle_admin";
 			submenu.classList.add('collapse');
@@ -75,7 +73,7 @@
 })();
 
 function messageFromWorkflowAdmin(e) {
-	let workflowConfig = JSON.parse(e.originalEvent.data);
+	if (e.originalEvent.data === "back") return window.top.document.location.reload();
 	localStorage.setItem('workflowConfig', e.originalEvent.data);
 	alert('Configuração aplicada com sucesso!');
 	window.top.document.location.reload();

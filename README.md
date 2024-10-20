@@ -18,7 +18,7 @@ Para o Firefox, é necessário adicionar o **add-on ID** ao final do manifesto, 
 ```json
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "sei-or.f2bezerra@gmail.com"
+			"id": "sei-ev.f2bezerra@gmail.com"
 		}
 	}
 ```
