@@ -214,6 +214,19 @@ class PontoControle {
     }
 
     async #setMarker(marker, value) {
+        let matchValue;
+        if (value && (matchValue = value.match(/(.*)(?:\+(\d+))(.*)/i))) {
+            let intValue = Number(matchValue[2]);
+            value = async e => {
+                if (e.notas && e.notas.length) {
+                    let regex = new RegExp((matchValue[1] ?? "") + "\\s*(\\d+)\\s*" + (matchValue[3] ?? ""), "i");
+                    let nota = e.notas.find(item => regex.test(item));
+                    intValue += nota && (m = nota.match(regex)) ? Number(m[1]) : 0;
+                }
+                return (matchValue[1] ?? "") + intValue + (matchValue[3] ?? "");
+            };
+        }
+
         return setMarcador(marker, value);
     }
 

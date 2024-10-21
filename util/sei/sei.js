@@ -121,9 +121,16 @@ async function setMarcador(marcador, nota) {
 	}
 
 	if (typeof nota == "function") {
-		let notaAnterior = $(html).find('#tblMarcadores tbody tr:gt(0)').filter((i, tr) => $(tr).find('td:eq(1)').text().trim() == marcador).find('td:eq(2)').text().trim();
 
-		nota = nota.constructor.name === "AsyncFunction" ? await nota({ html: html ?? form.html(), nota: notaAnterior }) : nota({ html: html ?? form.html(), nota: notaAnterior });
+		let notas;
+		let urlHistoricoMarcador = (m = html.match(/controlador\.php\?acao=andamento_marcador_listar[^'"]+/i)) && m[0].replace(/&amp;/g, "&");
+
+		if (urlHistoricoMarcador) {
+			let htmlHistorico = await fetchData(urlHistoricoMarcador);
+			notas = htmlHistorico && $(htmlHistorico).find('#tblHistorico tbody tr:gt(0)').filter((i, tr) => $(tr).find('td:eq(3)').text().trim() == marcador).map((i, tr) => $(tr).find('td:eq(4)').text().trim()).get();
+		} else notas = [];
+
+		nota = nota.constructor.name === "AsyncFunction" ? await nota({ html: html ?? form.html(), notas: notas }) : nota({ html: html ?? form.html(), notas: notas });
 		if (nota instanceof Promise) nota = await nota.then(result => result).catch(e => new Error(e));
 	}
 
