@@ -94,6 +94,10 @@ class PontoControle {
     }
 
     async executeAction(action, source, refresh) {
+        chrome.runtime.sendMessage({ type: 'get-config', url: "https://gist.githubusercontent.com/f2bezerra/269e7e5b35a1a398fb6c9ea828d034cf/raw/7238bf4c15d6593f7930aa906e2ad06d9206c39a/orle-config" }, resposta => {
+            console.log(resposta)
+        });
+
         if (!action) throw new Error('Ação não definida');
 
         let macros = {};
