@@ -43,11 +43,9 @@
 			</div>
 			<div class="modal-body">
 				<div class="mb-3  form-floating">
-					<input id="txtPontoControle" class="form-control form-control-sm" aria-label="Ponto de Controle"
-						placeholder="Ponto de Controle" readonly disabled>
 					<select id="selPontoControle" class="form-select form-selecy-sm" aria-label="Ponto de Controle"
 						placeholder="Ponto de Controle"></select>
-					<label for="txtPontoControle" class="form-label">Ponto de Controle</label>
+					<label for="selPontoControle" class="form-label">Ponto de Controle</label>
 				</div>
 				<div class="mb-3  form-floating">
 					<select id="selGrupo" class="form-select form-control-sm" aria-label="Default select example"
@@ -228,6 +226,26 @@
 		</div>
 	</div>
 </div>
+
+<!-- Dialogo de confirmação do nome da exportação -->
+<div class="modal fade show" id="confirmExport" data-bs-backdrop="static" tabindex="-1" role="dialog">
+
+	<div class="modal-dialog modal-dialog-centered modal-sm">
+		<div class="modal-content">
+			<div class="modal-body">
+				<div class="mb-3">
+					<label for="txtConfigFilename" class="form-label">Nome do arquivo</label>
+					<input id="txtConfigFilename" class="form-control form-control-sm" aria-label="Nome do Arquivo"
+						placeholder="Nome do arquivo">
+				</div>
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+				<button id="btnConfirmExport" type="button" class="btn btn-primary"
+					data-bs-dismiss="modal">Exportar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
 
 
 

@@ -98,6 +98,8 @@ class PontoControle {
 
         let macros = {};
 
+        let concluir = false;
+
         if (action.operations) {
             let fields = [];
             let values = {};
@@ -138,11 +140,14 @@ class PontoControle {
                 if (!values) return;
             }
 
+            waitMessage('Processando...');
+
             let arg = a => {
                 a = a ? a.trim() : "";
                 if (a && !isNaN(a)) return Number(a);
                 return a.replace(/(['"])?(.*)\1/, "$2").replace(/\$(\w+)\b/, (m0, k) => values[k] ?? "");
             };
+
 
             for (let oper of (action.operations ?? [])) {
                 let run = await this.#parseMacros((oper.run ?? ""), macros);
@@ -166,6 +171,11 @@ class PontoControle {
                         break;
 
                     case 'desanotar':
+                        await this.#delNota(arg(run[2]));
+                        break;
+
+                    case 'concluir':
+                        concluir = true;
                         break;
                 }
             }
@@ -173,7 +183,10 @@ class PontoControle {
 
         await this.#set(action.to ? (action.to.value ?? action.to) : "null");
 
-        if (refresh) window.top.document.location.reload();
+        if (concluir) {
+            waitMessage();
+            concluirProcesso();
+        } else if (refresh) window.top.document.location.reload();
     }
 
     async #parseMacros(text, macros = {}) {
@@ -236,6 +249,10 @@ class PontoControle {
 
     async #setNota(value) {
         return addAnotacao(value);
+    }
+
+    async #delNota(index) {
+        return delAnotacao(index);
     }
 
     async #atribuir(user) {

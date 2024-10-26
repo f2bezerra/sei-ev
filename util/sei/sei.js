@@ -196,6 +196,36 @@ async function addAnotacao(note) {
 	return postFormData(form, { txaDescricao: note });
 }
 
+//Excluir anotação no processo corrente
+async function delAnotacao(index) {
+	let doc = getFrameDocument("arvore");
+	if (!doc) throw new Error("Árvore do processo não encontrada");
+	let urlAnotacao = (m = $(doc.head).html().match(/controlador\.php\?acao=comentario_listar[^'"]+/i)) && m[0].replace(/&amp;/g, "&");
+
+	if (!urlAnotacao) throw new Error("URL da lista de comentários não encontrada");
+
+	return postFormData(urlAnotacao, {
+		formId: "frmComentarioLista",
+		redirectUrl: e => {
+			let urlExcluir = (m = e.html.match(/controlador\.php\?acao=comentario_excluir[^'"]+/i)) && m[0].replace(/&amp;/g, "&");
+			return urlExcluir || new Error("URL de excluir da lista de comentários não encontrada");
+		},
+		data: e => {
+			let item = $(e.html).find('#hdnInfraItens').val() ?? "";
+			index = !isNaN(index) && parseInt(index);
+
+			if (!isNaN(index)) item = (item.split(",")[index]) ?? "";
+
+			return {
+				hdnInfraItemId: isNaN(index) ? "" : item,
+				hdnInfraItensSelecionados: isNaN(index) ? item : ""
+			};
+
+		}
+	});
+}
+
+
 //Retornar histórico completo do processo atual
 async function getHistorico(filter) {
 	let docArvore = getFrameDocument("arvore");
@@ -241,6 +271,22 @@ async function getHistorico(filter) {
 	}
 
 	return result;
+}
+
+function concluirProcesso() {
+	let docArvore = getFrameDocument("arvore");
+	if (!docArvore) throw new Error("Árvore do processo não encontrada");
+	let urlConcluir = (m = $(docArvore.head).html().match(/controlador\.php\?acao=procedimento_concluir[^'"]+/i)) && m[0].replace(/&amp;/g, "&");
+
+	if (!urlConcluir) {
+		let docVisualizador = getFrameDocument("visualizador");
+		if (!docVisualizador) throw new Error("Árvore do processo não encontrada");
+		urlConcluir = (m = $(docVisualizador.head).html().match(/controlador\.php\?acao=procedimento_concluir[^'"]+/i)) && m[0].replace(/&amp;/g, "&");
+	}
+
+	if (!urlConcluir) throw new Error("URL de conclusão não encontrada");
+
+	location.href = urlConcluir;
 }
 
 

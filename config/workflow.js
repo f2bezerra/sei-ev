@@ -40,7 +40,8 @@ var commands = {
     ],
     desanotar: [
         { desc: "Índice", type: "number" }
-    ]
+    ],
+    concluir: []
 };
 var macros = ['@login', '@anterior', '@atribuidos'];
 
@@ -112,7 +113,7 @@ jQuery(async function ($) {
     $('#btnClear').on('click', clearWorkflow);
     $('#btnAddToWorkflow').on('click', e => editWorkflowItem());
     $('#btnApplyWorkflow').on('click', applyWorkflow);
-    $('#btnExport').on('click', exportConfig);
+    $('#btnExport').on('click', confirmExport);
     $('#fileImport').on('change', e => importConfig(e.currentTarget));
     $('#btnImport').on('click', () => document.getElementById('fileImport').click());
 
@@ -287,23 +288,16 @@ async function editWorkflowItem(target) {
 
     let data = currentWfiTarget && currentWfiTarget.data ? currentWfiTarget.data : {};
 
-    if (!currentWfiTarget) {
-        if (!config) initWorkflow();
-        let pontosRestantes = pontosControleSei.filter(ponto => !Object.hasOwn(config.workflow, defineKey(ponto.name)));
+    if (!config) initWorkflow();
+    let pontosRestantes = pontosControleSei.filter(ponto => (data.name == ponto.name) || config.workflow[defineKey(ponto.name)] == undefined);
 
-        if (!pontosRestantes.length) return showError('Todos os pontos de controle já foram cadastrados');
+    if (!pontosRestantes.length) return showError('Todos os pontos de controle já foram cadastrados');
 
-        $('#txtPontoControle').hide();
-        $('#selPontoControle').show();
-        $('#selPontoControle option').remove();
-        for (let ponto of pontosRestantes) {
-            $('#selPontoControle').append(`<option value="${ponto.value}">${ponto.name}</option>`)
-        }
-    } else {
-        $('#txtPontoControle').show();
-        $('#selPontoControle').hide();
-        $('#txtPontoControle').val(data.name);
+    $('#selPontoControle option').remove();
+    for (let ponto of pontosRestantes) {
+        $('#selPontoControle').append(`<option value="${ponto.value}">${ponto.name}</option>`)
     }
+    $('#selPontoControle').val(data.value);
 
     $('#selGrupo option').remove();
     $('#selGrupo').append(`<option></option>`);
@@ -327,15 +321,10 @@ async function editWorkflowItem(target) {
 
 function storeWorkflowItem() {
     let wfiItem = {
-        name: currentWfiTarget ? $('#txtPontoControle').val() : $('#selPontoControle option:selected').text(),
+        name: $('#selPontoControle option:selected').text(),
+        value: $('#selPontoControle').val(),
         group: $('#selGrupo').val()
     };
-
-    if (!currentWfiTarget) wfiItem.value = $('#selPontoControle').val();
-    if (!wfiItem.value) {
-        let sei = pontosControleSei.find(ponto => ponto.name == wfiItem.name);
-        wfiItem.value = sei.value;
-    }
 
     let actions = $('#actContainer li').get().map(item => item.data);
     if (actions.length) wfiItem.actions = actions;
@@ -365,8 +354,7 @@ function addActionItem(action) {
     <li class="card">
         <div class="card-header"><img class="icon-action-item" src="${SPRITE}#${icone}">&nbsp;<span>${action.label}</span> 
             <div class="panel-buttons position-absolute top-50 end-0 translate-middle-y">
-                <button class="panel-edit-button" title="Editar Ação"
-                    onclick="editActionItem(this);">&nbsp;</button>
+                <button class="panel-edit-button" title="Editar Ação">&nbsp;</button>
                 <button class="panel-delete-button" title="Excluir Ação">&nbsp;</button>
             </div>
         </div>
@@ -525,11 +513,11 @@ function storeOper() {
 
     let vars = $('#cmdVars tbody tr').get().map(row => {
         let cols = $(row).find('td').get().map(col => $(col).text());
-        let key = cols.shift();
+        let key = cols.shift() ?? "";
         cols.pop();
 
         cols = cols.map((item, index) => [keys[index], item]);
-        return [key, Object.fromEntries(cols)];
+        return [key.replace(/\W/g, ''), Object.fromEntries(cols)];
     });
 
     let oldName = currentOperTarget && $(currentOperTarget).attr('oper-name');
@@ -679,9 +667,20 @@ function download(file, text) {
     document.body.removeChild(element);
 }
 
+function confirmExport() {
+    const confirm = new bootstrap.Modal('#confirmExport');
+    $('#btnConfirmExport').off('click.confirmExport').on('click.confirmExport', exportConfig);
+    confirm.show();
+}
+
 function exportConfig() {
     let text = JSON.stringify(config, null, "  ");
-    let filename = "config.json";
+    let filename = $('#txtConfigFilename').val() ?? "";
+    filename = filename.trim();
+    filename = filename ? filename : "config.json";
+
+    if (!filename.endsWith(".json")) filename += '.json';
+
     download(filename, text);
 }
 
