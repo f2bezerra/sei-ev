@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "sei-ev",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"author": "Fabio Fernandes Bezerra",
 	"description": "Incorpora ao Sistema Eletrônico de Informações (SEI) novas funções de produtividade",
 	"icons": {

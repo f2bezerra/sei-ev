@@ -128,12 +128,8 @@ class PontoControle {
 
             if (fields.length) {
                 let title = action.label ?? 'sei-ev';
-                title = title.split(" ");
 
-                let confirmButton = action.label ? title[0] : 'Confirmar';
-
-                title[0] = title[0].replace(/ar$/, 'ação');
-                title = title.join(' ');
+                let confirmButton = 'Confirmar';
 
                 values = await openFormDlg(fields, title, { width: "400px", confirmButton: confirmButton, alwaysResolve: true });
 
@@ -184,7 +180,7 @@ class PontoControle {
         await this.#set(action.to ? (action.to.value ?? action.to) : "null");
 
         if (concluir) {
-            waitMessage();
+            waitMessage(null);
             concluirProcesso();
         } else if (refresh) window.top.document.location.reload();
     }
@@ -214,6 +210,11 @@ class PontoControle {
                     case 'atribuidos':
                         macros.atribuidos = macros.atribuidos || await this.#listAtribuidos();
                         break;
+
+                    case 'atribuiveis':
+                        macros.atribuiveis = macros.atribuiveis || await this.#listAtribuiveis();
+                        break;
+
                 }
 
             }
@@ -296,6 +297,12 @@ class PontoControle {
         }
 
         return atribuidos ?? [];
+    }
+
+    async #listAtribuiveis() {
+        let atribuiveis = await getAtribuiveis();
+
+        return [...atribuiveis.keys()];
     }
 
 }

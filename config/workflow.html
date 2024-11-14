@@ -1,7 +1,10 @@
-﻿<html>
+﻿<!DOCTYPE html>
+<html>
 
 <head>
 	<link href="../util/bootstrap/bootstrap-5.3.3.min.css" rel="stylesheet">
+	<link href="../util/jslib/common/common.css" rel="stylesheet">
+
 	<script src="../util/bootstrap/bootstrap-5.3.3.bundle.min.js"></script>
 	<script src="../util/jquery/jquery-3.7.1.js"></script>
 	<script src="../util/jquery/jquery-ui-1.13.3.js"></script>
@@ -19,13 +22,23 @@
 		<h4>Fluxo de Trabalho</h4>
 	</div>
 	<div class="bar-buttons" style="margin: 10px 0;">
-		<button id="btnBack" type="button" class="btn btn-primary">Voltar</button>
-		<button id="btnClear" type="button" class="btn btn-primary">Limpar</button>
-		<button id="btnAddToWorkflow" type="button" class="btn btn-primary">Adicionar</button>
-		<button id="btnApplyWorkflow" type="button" class="btn btn-primary">Aplicar</button>
-		<button id="btnExport" type="button" class="btn btn-primary">Exportar</button>
+		<button id="btnBack" type="button" class="btn btn-primary"
+			title="Voltar para a tela anterior sem aplicar as definições do Fluxo de Trabalho">Voltar</button>
+		<button id="btnInit" type="button" class="btn btn-primary"
+			title="Iniciar um Fluxo de Trabalho do zero">Inicializar</button>
+		<button id="btnClear" type="button" class="btn btn-primary"
+			title="Limpar definições de Fluxo de Trabalho">Limpar</button>
+		<button id="btnAddToWorkflow" type="button" class="btn btn-primary"
+			title="Adicionar Ponto de COntrole ao Fluxo de Trabalho">Adicionar</button>
+		<button id="btnApplyWorkflow" type="button" class="btn btn-primary"
+			title="Aplicar definições do Fluxo de Trabalho e voltar para a tela anterior">Aplicar</button>
+		<button id="btnExport" type="button" class="btn btn-primary"
+			title="Exportar definições de Fluxo de TRabalho">Exportar</button>
 		<input id="fileImport" type="file" style="display:none;" />
-		<button id="btnImport" type="button" class="btn btn-primary">Importar</button>
+		<button id="btnImport" type="button" class="btn btn-primary"
+			title="Importar definições de Fluxo de Trabalho">Importar</button>
+		<button id="btnMerge" type="button" class="btn btn-primary"
+			title="Importar definições de Fluxo de Trabalho e mesclar com o Fluxo de Trabalho atual">Mesclar</button>
 	</div>
 
 	<ul id="wfContainer" class="card list-unstyled" style="padding: 8px;"></ul>

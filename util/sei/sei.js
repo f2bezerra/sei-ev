@@ -45,7 +45,6 @@ async function attribProcesso(user) {
 		user = infoUser.login;
 	}
 
-
 	let urlAtribuir = (m = $(docArvore.head).html().match(/controlador\.php\?acao=procedimento_atribuicao_cadastrar[^'"]+/i)) && m[0].replace(/&amp;/g, "&");
 
 	if (!urlAtribuir) throw new Error("URL de atribuição não encontrada");
@@ -287,6 +286,27 @@ function concluirProcesso() {
 	if (!urlConcluir) throw new Error("URL de conclusão não encontrada");
 
 	location.href = urlConcluir;
+}
+
+async function getAtribuiveis() {
+	let docArvore = getFrameDocument("arvore");
+
+	if (!docArvore) throw new Error("Árvore do processo não encontrada");
+
+	let urlAtribuir = (m = $(docArvore.head).html().match(/controlador\.php\?acao=procedimento_atribuicao_cadastrar[^'"]+/i)) && m[0].replace(/&amp;/g, "&");
+
+	if (!urlAtribuir) throw new Error("URL de atribuição não encontrada");
+
+	let html = await fetchData(urlAtribuir);
+
+	let atribuiveis = new Map();
+
+	$(html).find('#selAtribuicao option').each((index, elem) => {
+		let text = $(elem).text().split('-');
+		if (text.length > 1) atribuiveis.set(text[0].trim(), text[1].trim());
+	});
+
+	return atribuiveis
 }
 
 

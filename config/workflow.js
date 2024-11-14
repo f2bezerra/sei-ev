@@ -43,7 +43,7 @@ var commands = {
     ],
     concluir: []
 };
-var macros = ['@login', '@anterior', '@atribuidos'];
+var macros = ['@login', '@anterior', '@atribuidos', '@atribuiveis'];
 
 var currentOperTarget, currentActionTarget, currentWfiTarget;
 var operEditor, actionEditor, wfiEditor;
@@ -54,6 +54,8 @@ const SPRITE = "../images/sprite.svg";
 
 jQuery(async function ($) {
     $('#wfContainer, #actContainer, #operContainer').sortable({ handle: '.card-header' });
+
+    waitMessage('Carregando...', { compact: true });
 
     $('.modal-over').on('show.bs.modal', event => {
         if ($(event.currentTarget).prev().is('.modal-backdrop')) return;
@@ -114,8 +116,10 @@ jQuery(async function ($) {
     $('#btnAddToWorkflow').on('click', e => editWorkflowItem());
     $('#btnApplyWorkflow').on('click', applyWorkflow);
     $('#btnExport').on('click', confirmExport);
-    $('#fileImport').on('change', e => importConfig(e.currentTarget));
-    $('#btnImport').on('click', () => document.getElementById('fileImport').click());
+    $('#fileImport').on('change', e => loadConfigFile(e.currentTarget));
+    $('#btnImport').on('click', importConfig);
+    $('#btnInit').on('click', initWorkflowSkeleton);
+    $('#btnMerge').on('click', mergeWorkflow);
 
     //Tela de edição de Ponto de Controle
     $('#selGrupo').on('change', e => changeGrupo(e.currentTarget));
@@ -146,20 +150,20 @@ jQuery(async function ($) {
         }
 
         initWorkflow(data.config);
+        waitMessage(null);
     });
 
 
 });
 
-function defineKey(value, format = "lower") {
+function defineKey(value, camel = false) {
     value = value.normalize('NFD').replace(/[\u0300-\u036f]/g, "");
     value = value.replace(/\b(?:a|ante|ate|com|contra|d[aeo]|desde|para|p[eo]r])\b/g, "").replace(/\s+\W?\s+/g, " ");
-    value = value.replace(/\W/g, "_").toLowerCase();
+    value = value.replace(/\W+/g, "_").toLowerCase();
 
     value = value.replace("aguardando", "ag");
 
-    if (format == "upper") value = value.toUpperCase();
-    if (format == "camel") value = value.replace(/^_+/g, "").replace(/_([a-z])/g, (m0, m1) => m1.toUpperCase());
+    if (camel) value = value.replace(/^_+/g, "").replace(/_([a-z])/g, (m0, m1) => m1.toUpperCase());
 
     return value;
 }
@@ -196,6 +200,37 @@ function initWorkflow(data) {
     $('#operList li a').on('click', e => e.currentTarget.getAttribute('oper-name') ? addOperItem(e.currentTarget.getAttribute('oper-name')) : editOperItem());
 }
 
+function mergeWorkflow(currentConfig, mergeConfig) {
+    let mergedConfig = Object.assign({}, currentConfig);
+    for (const [key, pontoControle] in mergeConfig) {
+        if (!pontosControleSei.find(p => p.key == key)) continue;
+
+        pontoControle.actions = (pontoControle.actions ?? []).filter(a => !(a.to) || pontosControleSei.find(p => p.key == a.to));
+
+        for (let action of pontoControle.actions) {
+            if (action.operations) {
+                for (i = 0; i < action.operations.length; i++) {
+                    let oper = action.operations[i];
+                    let mergeOperName = oper;
+
+                    if (mergedConfig.operations[oper]) {
+                        mergeOperName = 'm-' + oper;
+                        action.operations[i] = mergeOperName;
+                    }
+
+                    if (!mergedConfig.operations[mergeOperName]) mergedConfig.operations[mergeOperName] = mergeConfig.operations[oper];
+                }
+            }
+        }
+
+        if (mergedConfig.workflow[key]) {
+            mergedConfig.workflow[key].actions = [...(mergedConfig.workflow[key].actions ?? []), ...pontoControle.actions];
+            if (pontoControle.grupo) mergedConfig.workflow[key].grupo = pontoControle.grupo;
+        } else mergedConfig.workflow[key] = pontoControle;
+    }
+
+}
+
 function clearWorkflow() {
     $('#wfContainer li').remove();
     groups = [];
@@ -210,6 +245,50 @@ function exitWorkflow() {
     window.top.postMessage("back", '*');
 }
 
+
+function initWorkflowSkeleton() {
+    clearWorkflow();
+
+    let skeleton = {
+        workflow: {}
+    };
+
+    for (i = 0; i < pontosControleSei.length; i++) {
+        let pontoControle = pontosControleSei[i];
+        let nextPontoControle = pontosControleSei[i + 1] ?? null;
+        let m, grupo = (m = pontoControle.name.match(/^\s*[(<[*#]?(.+?)\s*[.:_)>\]-]/)) && m[1];
+        let nextGrupo = nextPontoControle && (m = nextPontoControle.name.match(/^\s*[(<[*#]?(.+?)\s*[.:_)>\]-]/)) && m[1];
+
+        if (!grupo || grupo !== nextGrupo) {
+            nextPontoControle = {
+                label: 'Finalizar',
+                icon: 'cancel-flag'
+            };
+        } else {
+            nextPontoControle = {
+                to: nextPontoControle.key,
+                label: 'Avançar',
+                icon: 'next-flag'
+            };
+        }
+
+        skeleton.workflow[pontoControle.key] = {
+            name: pontoControle.name,
+            value: pontoControle.value,
+            group: grupo ?? undefined,
+            actions: [nextPontoControle]
+        }
+    }
+
+    initWorkflow(skeleton);
+    waitMessage(null);
+}
+
+function mergeWorkflow() {
+    let input = document.getElementById('fileImport');
+    input.mergeConfigFile = true;
+    input.click();
+}
 
 function addWorkflowItem(key, item) {
     let $li = $(`
@@ -669,6 +748,7 @@ function download(file, text) {
 
 function confirmExport() {
     const confirm = new bootstrap.Modal('#confirmExport');
+    $('#txtConfigFilename').val('config');
     $('#btnConfirmExport').off('click.confirmExport').on('click.confirmExport', exportConfig);
     confirm.show();
 }
@@ -684,10 +764,17 @@ function exportConfig() {
     download(filename, text);
 }
 
-function importConfig(e) {
+function importConfig() {
+    let input = document.getElementById('fileImport');
+    input.mergeConfigFile = false;
+    input.click();
+}
+
+function loadConfigFile(e) {
     let fr = new FileReader();
     fr.onload = function () {
         let data = JSON.parse(fr.result);
+        if (e.mergeConfigFile) data = mergeWorkflow(config, data);
         initWorkflow(data);
     }
 
