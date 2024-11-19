@@ -29,7 +29,7 @@ $(() => {
 async function handleNextPontoControle(e) {
 	let selectedRows = $('tr:visible .infraCheckboxInput:checked').closest('tr').get();
 
-	if (!selectedRows.length) return errorMessage('Nenhum processo foi selecionado!');
+	if (!selectedRows.length) return failMessage('Nenhum processo foi selecionado!');
 
 	let rowsBySituacao = {};
 
@@ -56,7 +56,7 @@ async function handleNextPontoControle(e) {
 			`Nenhum dos ${selectedRows.length} processos selecionados está em um Ponto de Controle!` :
 			`O processo ${$(selectedRows[0]).find('a[href*="acao=procedimento_trabalhar"]').text()} não está em nenhum Ponto de Controle!`;
 
-		return errorMessage(msg);
+		return failMessage(msg);
 	}
 
 	msg = (selectedRows.length > 1 && selectedRows.length > filteredSelectedRows.length) ?

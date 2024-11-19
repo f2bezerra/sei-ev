@@ -150,6 +150,7 @@ jQuery(async function ($) {
         }
 
         initWorkflow(data.config);
+        $('#wfTitle').removeClass('wfChanged');
         waitMessage(null);
     });
 
@@ -200,12 +201,14 @@ function initWorkflow(data) {
     $('#operList li a').on('click', e => e.currentTarget.getAttribute('oper-name') ? addOperItem(e.currentTarget.getAttribute('oper-name')) : editOperItem());
 }
 
-function mergeWorkflow(currentConfig, mergeConfig) {
+function mergeConfig(currentConfig, mergeConfig) {
     let mergedConfig = Object.assign({}, currentConfig);
-    for (const [key, pontoControle] in mergeConfig) {
+    for (const [key, pontoControle] of Object.entries(mergeConfig.workflow ?? {})) {
         if (!pontosControleSei.find(p => p.key == key)) continue;
 
         pontoControle.actions = (pontoControle.actions ?? []).filter(a => !(a.to) || pontosControleSei.find(p => p.key == a.to));
+
+        mergedConfig.workflow[key].actions = mergedConfig.workflow[key].actions ?? [];
 
         for (let action of pontoControle.actions) {
             if (action.operations) {
@@ -221,6 +224,15 @@ function mergeWorkflow(currentConfig, mergeConfig) {
                     if (!mergedConfig.operations[mergeOperName]) mergedConfig.operations[mergeOperName] = mergeConfig.operations[oper];
                 }
             }
+
+            let actionFound = mergedConfig.workflow[key].actions.find(item => item.label == action.label);
+            if (actionFound) {
+                let indexDest = mergedConfig.workflow[key].actions.indexOf(actionFound);
+                mergedConfig.workflow[key].actions[indexDest] = action;
+
+                let indexSource = pontoControle.actions.indexOf(action);
+                pontoControle.actions.splice(indexSource, 1);
+            }
         }
 
         if (mergedConfig.workflow[key]) {
@@ -229,12 +241,14 @@ function mergeWorkflow(currentConfig, mergeConfig) {
         } else mergedConfig.workflow[key] = pontoControle;
     }
 
+    return mergedConfig;
 }
 
 function clearWorkflow() {
     $('#wfContainer li').remove();
     groups = [];
     config = null;
+    $('#wfTitle').addClass('wfChanged');
 }
 
 function applyWorkflow() {
@@ -337,9 +351,9 @@ function updateWorkflowItem(target, data) {
             let $opers = $(`<span><code>Operações:</code></span>`);
             for (let oper of action.operations) $opers.append(`<span class="badge text-bg-secondary" oper-name="${oper}">${oper}</span>`)
             $actionsDiv.append($opers);
-            $actionsDiv.append('<br>');
         }
 
+        $actionsDiv.append('<br>');
     }
 
 }
@@ -774,8 +788,10 @@ function loadConfigFile(e) {
     let fr = new FileReader();
     fr.onload = function () {
         let data = JSON.parse(fr.result);
-        if (e.mergeConfigFile) data = mergeWorkflow(config, data);
+        if (e.mergeConfigFile) data = mergeConfig(config, data);
         initWorkflow(data);
+
+        if (e.mergeConfigFile) successMessage('Configurações mescladas com sucesso!');
     }
 
     fr.readAsText(e.files[0]);
