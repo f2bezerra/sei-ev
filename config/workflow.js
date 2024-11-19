@@ -591,6 +591,8 @@ function storeOper() {
 
     if (!name) throw new Error('Campo obrigatório');
 
+    if (!config.operations) config.operations = {};
+
     let cmd = $('#selCmdOper').val();
     let args = "";
     $('.cmd-args').each((index, item) => {
@@ -708,7 +710,10 @@ function addVarItem(k, v) {
             })
             item.replaceWith(input);
             input.focus();
-            input.select();
+            try {
+                input.select();
+            } catch (e) {
+            }
         })
     });
 

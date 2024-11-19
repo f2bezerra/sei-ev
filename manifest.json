@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "sei-ev",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"author": "Fabio Fernandes Bezerra",
 	"description": "Incorpora ao Sistema Eletrônico de Informações (SEI) novas funções de produtividade",
 	"icons": {
@@ -55,5 +55,10 @@
 				"config/*"
 			]
 		}
-	]
+	],
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "sei-ev.f2bezerra@gmail.com"
+		}
+	}
 }
