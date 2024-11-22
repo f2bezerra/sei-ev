@@ -6,10 +6,11 @@ Extensão do SEI com funcionalidades extras voltadas paras as áreas de Outrogas
 ### 1. Configuração
 Após clonar o repositório, executar os seguintes comandos:
 ```
+cd ./util/jslib
+git submodule init
 git submodule update 
-cd ./init/jslib
 git sparse-checkout init
-git sparse-checkout common
+git sparse-checkout set common
 ```
 ### 2. Build
 Para empacotar a extensão, executar  ``web-ext build -o``
