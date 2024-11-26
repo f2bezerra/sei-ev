@@ -1,6 +1,6 @@
-# sei-ev
+#  ![SEIev](/docs/logo@128.png)
 
-O SEI-EV é uma extensão para o Chrome que implementa um conjunto de funcionalidades para aumento de produtividade no uso do SEI (Sistema de Processos Eletrônicos).
+O SEI<sub>ev</sub> é uma extensão para o Chrome que implementa um conjunto de funcionalidades para aumento de produtividade no uso do SEI (Sistema de Processos Eletrônicos).
 
 Funcionalidaes disponíveis:
 - Na página de controle de processos (inicial):
@@ -127,19 +127,19 @@ Os atributos das variáveis são:
 
 #### Tipo _**text**_
 
- Uma caixa de texto de livre preenchimento é apresentada ao usuário para informar um valor textual para a variável
+Uma caixa de texto de livre preenchimento é apresentada ao usuário para informar um valor textual para a variável
 
- #### Tipo _**number**_
+#### Tipo _**number**_
 
- Uma caixa de texto de livre preenchimento é apresentada ao usuário para informar um valor numérico para a variável
+Uma caixa de texto de livre preenchimento é apresentada ao usuário para informar um valor numérico para a variável
 
- #### Tipo _**select**_
+#### Tipo _**select**_
 
- Uma caixa de seleção é apresentada ao usuário para selecionar um dos valores para a variável. As opções disponíveis deverão estar listadas no atributo ``Opções`` da variável, com os valores separados por vírgula.
+Uma caixa de seleção é apresentada ao usuário para selecionar um dos valores para a variável. As opções disponíveis deverão estar listadas no atributo ``Opções`` da variável, com os valores separados por vírgula.
 
 #### Tipo _**textarea**_
 
- Uma caixa de texto de múltiplas linhas é apresentada ao usuário para informar um texto para a variável. No atributo ``Opções`` é possível informar o número de linhas da caixa de texto.
+Uma caixa de texto de múltiplas linhas é apresentada ao usuário para informar um texto para a variável. No atributo ``Opções`` é possível informar o número de linhas da caixa de texto.
 
  
 ### Macros
