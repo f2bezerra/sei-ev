@@ -1,5 +1,4 @@
 # sei-ev
-https://img.shields.io/github/v/tag/f2bezerra/sei-ev
 
 O SEI-EV é uma extensão para o Chrome que implementa um conjunto de funcionalidades para aumento de produtividade no uso do SEI (Sistema de Processos Eletrônicos).
 
