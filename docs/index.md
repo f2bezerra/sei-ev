@@ -1,4 +1,4 @@
-#  ![SEIev](/docs/logo@128.png)
+#  ![SEIev](logo@128.png)
 
 O SEI<sub>ev</sub> é uma extensão para o Chrome que implementa um conjunto de funcionalidades para aumento de produtividade no uso do SEI (Sistema de Processos Eletrônicos).
 
